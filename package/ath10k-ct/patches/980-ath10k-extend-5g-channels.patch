@@ -1,0 +1,135 @@
+
+Originally made by Kirill Lukonin (EvilWirelessMan)
+
+Subject: [PATCH] Extend CHAN5G to get some extra channels
+
+--- a/ath10k-4.19/mac.c
++++ b/ath10k-4.19/mac.c
+@@ -9065,32 +9065,80 @@ static const struct ieee80211_channel ath10k_2ghz_channels[] = {
+ 
+ static const struct ieee80211_channel ath10k_5ghz_channels[] = {
+ 	CHAN5G(36, 5180, 0),
++	CHAN5G(38, 5190, 0),
+ 	CHAN5G(40, 5200, 0),
++	CHAN5G(42, 5210, 0),
+ 	CHAN5G(44, 5220, 0),
++	CHAN5G(46, 5230, 0),
+ 	CHAN5G(48, 5240, 0),
++	CHAN5G(50, 5250, 0),
+ 	CHAN5G(52, 5260, 0),
++	CHAN5G(54, 5270, 0),
+ 	CHAN5G(56, 5280, 0),
++	CHAN5G(58, 5290, 0),
+ 	CHAN5G(60, 5300, 0),
++	CHAN5G(62, 5310, 0),
+ 	CHAN5G(64, 5320, 0),
++	CHAN5G(66, 5330, 0),
++	CHAN5G(68, 5340, 0),
++	CHAN5G(70, 5350, 0),
++	CHAN5G(72, 5360, 0),
++	CHAN5G(74, 5370, 0),
++	CHAN5G(76, 5380, 0),
++	CHAN5G(78, 5390, 0),
++	CHAN5G(80, 5400, 0),
++	CHAN5G(82, 5410, 0),
++	CHAN5G(84, 5420, 0),
++	CHAN5G(86, 5430, 0),
++	CHAN5G(88, 5440, 0),
++	CHAN5G(92, 5460, 0),
++	CHAN5G(96, 5480, 0),
+ 	CHAN5G(100, 5500, 0),
++	CHAN5G(102, 5510, 0),
+ 	CHAN5G(104, 5520, 0),
++	CHAN5G(106, 5530, 0),
+ 	CHAN5G(108, 5540, 0),
++	CHAN5G(110, 5550, 0),
+ 	CHAN5G(112, 5560, 0),
++	CHAN5G(114, 5570, 0),
+ 	CHAN5G(116, 5580, 0),
++	CHAN5G(118, 5590, 0),
+ 	CHAN5G(120, 5600, 0),
++	CHAN5G(122, 5610, 0),
+ 	CHAN5G(124, 5620, 0),
++	CHAN5G(126, 5630, 0),
+ 	CHAN5G(128, 5640, 0),
++	CHAN5G(130, 5650, 0),
+ 	CHAN5G(132, 5660, 0),
++	CHAN5G(134, 5670, 0),
+ 	CHAN5G(136, 5680, 0),
++	CHAN5G(138, 5690, 0),
+ 	CHAN5G(140, 5700, 0),
++	CHAN5G(142, 5710, 0),
+ 	CHAN5G(144, 5720, 0),
++	CHAN5G(146, 5730, 0),
++	CHAN5G(148, 5740, 0),
+ 	CHAN5G(149, 5745, 0),
++	CHAN5G(150, 5750, 0),
++	CHAN5G(152, 5760, 0),
+ 	CHAN5G(153, 5765, 0),
++	CHAN5G(154, 5770, 0),
++	CHAN5G(156, 5780, 0),
+ 	CHAN5G(157, 5785, 0),
++	CHAN5G(158, 5790, 0),
++	CHAN5G(160, 5800, 0),
+ 	CHAN5G(161, 5805, 0),
++	CHAN5G(162, 5810, 0),
++	CHAN5G(164, 5820, 0),
+ 	CHAN5G(165, 5825, 0),
++	CHAN5G(166, 5830, 0),
++	CHAN5G(168, 5840, 0),
+ 	CHAN5G(169, 5845, 0),
++	CHAN5G(170, 5850, 0),
++	CHAN5G(172, 5860, 0),
+ 	CHAN5G(173, 5865, 0),
++	CHAN5G(174, 5870, 0),
++	CHAN5G(176, 5880, 0),
+ 	/* If you add more, you may need to change ATH10K_MAX_5G_CHAN */
+ 	/* And you will definitely need to change ATH10K_NUM_CHANS in core.h */
+ };
+--- a/ath10k-4.19/core.h
++++ b/ath10k-4.19/core.h
+@@ -37,8 +37,8 @@
+ #define WMI_READY_TIMEOUT (5 * HZ)
+ #define ATH10K_FLUSH_TIMEOUT_HZ (5 * HZ)
+ #define ATH10K_CONNECTION_LOSS_HZ (3 * HZ)
+-#define ATH10K_NUM_CHANS 41
+-#define ATH10K_MAX_5G_CHAN 173
++#define ATH10K_NUM_CHANS 89
++#define ATH10K_MAX_5G_CHAN 176
+ 
+ /* Antenna noise floor */
+ #define ATH10K_DEFAULT_NOISE_FLOOR -95
+--- a/ath10k-4.19/mac.c
++++ b/ath10k-4.19/mac.c
+@@ -3911,21 +3911,6 @@ static void ath10k_regd_update(struct ath10k *ar)
+ 		ath10k_warn(ar, "failed to set pdev regdomain: %d\n", ret);
+ }
+ 
+-static void ath10k_mac_update_channel_list(struct ath10k *ar,
+-					   struct ieee80211_supported_band *band)
+-{
+-	int i;
+-
+-	if (ar->low_5ghz_chan && ar->high_5ghz_chan) {
+-		for (i = 0; i < band->n_channels; i++) {
+-			if (band->channels[i].center_freq < ar->low_5ghz_chan ||
+-			    band->channels[i].center_freq > ar->high_5ghz_chan)
+-				band->channels[i].flags |=
+-					IEEE80211_CHAN_DISABLED;
+-		}
+-	}
+-}
+-
+ static void ath10k_reg_notifier(struct wiphy *wiphy,
+ 				struct regulatory_request *request)
+ {
+@@ -3954,9 +3939,6 @@ static void ath10k_reg_notifier(struct wiphy *wiphy,
+ 		ath10k_regd_update(ar);
+ 	mutex_unlock(&ar->conf_mutex);
+ 
+-	if (ar->phy_capability & WHAL_WLAN_11A_CAPABILITY)
+-		ath10k_mac_update_channel_list(ar,
+-					       ar->hw->wiphy->bands[NL80211_BAND_5GHZ]);
+ }
+ 
+ static void ath10k_stop_radar_confirmation(struct ath10k *ar)
